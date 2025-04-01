@@ -12,10 +12,12 @@ const GameScreen = ({ route, navigation }) => {
   const [puzzle, setPuzzle] = useState([]);
   const [solvedPuzzle, setSolvedPuzzle] = useState([]);
   const [selectedCell, setSelectedCell] = useState(null);
+  const [selectedNumber, setSelectedNumber] = useState(null);
   const [message, setMessage] = useState('');
   const [time, setTime] = useState(0);
   const [timerRunning, setTimerRunning] = useState(true);
   const [showSolution, setShowSolution] = useState(false);
+  const [incorrectCells, setIncorrectCells] = useState([]);
 
   useEffect(() => {
     generateNewGame();
@@ -36,15 +38,22 @@ const GameScreen = ({ route, navigation }) => {
       .map(row => row.map(cell => cell === '.' ? 0 : parseInt(cell)));
     setSolvedPuzzle(solutionGrid);
     setSelectedCell(null);
+    setSelectedNumber(null);
     setMessage('');
     setTime(0);
     setTimerRunning(true);
     setShowSolution(false);
+    setIncorrectCells([]);
   };
 
   const handleCellPress = (row, col) => {
     if (!showSolution && initialPuzzle[row][col] === '.') {
       setSelectedCell({ row, col });
+      if (puzzle[row][col] !== 0) {
+        setSelectedNumber(puzzle[row][col]);
+      } else {
+        setSelectedNumber(null);
+      }
     }
   };
 
@@ -55,7 +64,15 @@ const GameScreen = ({ route, navigation }) => {
       if (initialPuzzle[row][col] === '.') {
         newPuzzle[row][col] = num;
         setPuzzle(newPuzzle);
+        setSelectedNumber(num);
         checkCompletion(newPuzzle);
+
+        // Auto-check the entered number
+        if (num !== 0 && num !== solvedPuzzle[row][col]) {
+          setIncorrectCells(prev => [...prev, `${row}-${col}`]);
+        } else {
+          setIncorrectCells(prev => prev.filter(cell => cell !== `${row}-${col}`));
+        }
       }
     }
   };
@@ -67,9 +84,16 @@ const GameScreen = ({ route, navigation }) => {
   };
 
   const validateSolution = () => {
-    const isCorrect = JSON.stringify(puzzle) === JSON.stringify(solvedPuzzle);
+    const incorrect = [];
+    puzzle.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        if (cell !== solvedPuzzle[rowIndex][colIndex]) {
+          incorrect.push(`${rowIndex}-${colIndex}`);
+        }
+      });
+    });
 
-    if (isCorrect) {
+    if (incorrect.length === 0) {
       setTimerRunning(false);
       Alert.alert(
         'Вітаємо!',
@@ -80,6 +104,7 @@ const GameScreen = ({ route, navigation }) => {
         ]
       );
     } else {
+      setIncorrectCells(incorrect);
       setMessage('Є помилки! Перевірте розв\'язок');
     }
   };
@@ -95,6 +120,12 @@ const GameScreen = ({ route, navigation }) => {
     setShowSolution(true);
     setTimerRunning(false);
     setMessage('Показано розв\'язок. Оберіть дію:');
+    setSelectedCell(null);
+    setSelectedNumber(null);
+  };
+
+  const isNumberHighlighted = (row, col, num) => {
+    return selectedNumber === num && puzzle[row][col] === num;
   };
 
   const renderCell = (row, col) => {
@@ -104,6 +135,8 @@ const GameScreen = ({ route, navigation }) => {
     const displayValue = value === 0 ? '' : value;
     const hasRightBorder = (col + 1) % 3 === 0 && col !== 8;
     const hasBottomBorder = (row + 1) % 3 === 0 && row !== 8;
+    const isIncorrect = incorrectCells.includes(`${row}-${col}`);
+    const isHighlighted = selectedNumber && puzzle[row][col] === selectedNumber;
 
     return (
       <TouchableOpacity
@@ -115,6 +148,8 @@ const GameScreen = ({ route, navigation }) => {
           showSolution && styles.solutionCell,
           hasRightBorder && styles.rightBorder,
           hasBottomBorder && styles.bottomBorder,
+          isIncorrect && styles.incorrectCell,
+          isHighlighted && styles.highlightedCell,
         ]}
         onPress={() => handleCellPress(row, col)}
         disabled={showSolution}
@@ -124,6 +159,8 @@ const GameScreen = ({ route, navigation }) => {
           isFixed && styles.fixedText,
           isSelected && styles.selectedText,
           showSolution && styles.solutionText,
+          isIncorrect && styles.incorrectText,
+          isHighlighted && styles.highlightedText,
         ]}>
           {displayValue}
         </Text>
@@ -139,13 +176,13 @@ const GameScreen = ({ route, navigation }) => {
             style={styles.solutionButton}
             onPress={generateNewGame}
           >
-            <Text style={styles.solutionButtonText}>Нова гра</Text>
+            <Text style={styles.solutionButtonText}>Нова Гра</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.solutionButton}
             onPress={() => navigation.goBack()}
           >
-            <Text style={styles.solutionButtonText}>У меню</Text>
+            <Text style={styles.solutionButtonText}>У Меню</Text>
           </TouchableOpacity>
         </View>
       );
@@ -160,7 +197,7 @@ const GameScreen = ({ route, navigation }) => {
           <Text style={styles.buttonText}>Розв'язати</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton} onPress={generateNewGame}>
-          <Text style={styles.buttonText}>Нова гра</Text>
+          <Text style={styles.buttonText}>Нова Гра</Text>
         </TouchableOpacity>
       </View>
     );
@@ -195,10 +232,16 @@ const GameScreen = ({ route, navigation }) => {
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
             <TouchableOpacity
               key={num}
-              style={styles.numberButton}
+              style={[
+                styles.numberButton,
+                selectedNumber === num && styles.selectedNumberButton
+              ]}
               onPress={() => handleNumberInput(num)}
             >
-              <Text style={styles.numberText}>{num}</Text>
+              <Text style={[
+                styles.numberText,
+                selectedNumber === num && styles.selectedNumberText
+              ]}>{num}</Text>
             </TouchableOpacity>
           ))}
           <TouchableOpacity
@@ -276,6 +319,12 @@ const styles = StyleSheet.create({
   solutionCell: {
     backgroundColor: '#E8F5E9',
   },
+  incorrectCell: {
+    backgroundColor: '#FFEBEE',
+  },
+  highlightedCell: {
+    backgroundColor: '#FFF9C4',
+  },
   fixedText: {
     color: '#4A6FA5',
     fontWeight: 'bold',
@@ -289,6 +338,13 @@ const styles = StyleSheet.create({
   },
   solutionText: {
     color: '#2E7D32',
+    fontWeight: 'bold',
+  },
+  incorrectText: {
+    color: '#D32F2F',
+  },
+  highlightedText: {
+    color: '#FF8F00',
     fontWeight: 'bold',
   },
   rightBorder: {
@@ -318,6 +374,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  selectedNumberButton: {
+    backgroundColor: '#5D8BF4',
+  },
   clearButton: {
     backgroundColor: '#FFA07A',
   },
@@ -325,6 +384,9 @@ const styles = StyleSheet.create({
     fontSize: numberButtonSize * 0.5,
     color: '#fff',
     fontWeight: 'bold',
+  },
+  selectedNumberText: {
+    color: '#fff',
   },
   buttonRow: {
     flexDirection: 'row',
