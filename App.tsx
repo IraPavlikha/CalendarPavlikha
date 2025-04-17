@@ -1,4 +1,4 @@
-// App.tsx
+
 import React from 'react';
 import { SafeAreaView, StyleSheet } from 'react-native';
 import Calendar from './src/components/Calendar';
@@ -14,7 +14,7 @@ const App: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 20,  // Додаємо відступ зверху
+    marginTop: 20, 
   },
 });
 
