@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { addMonths, subMonths, startOfMonth, endOfMonth, getDaysInMonth, getDay, format } from 'date-fns';
 import Header from './Header';
 import Day from './Day';
@@ -43,6 +43,8 @@ const Calendar: React.FC = () => {
 
   const days = generateCalendarDays(currentDate);
 
+  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
   return (
     <View style={styles.container}>
       <Header
@@ -51,7 +53,16 @@ const Calendar: React.FC = () => {
         onPrevMonth={handlePrevMonth}
         onNextMonth={handleNextMonth}
         onToday={handleToday}
+        currentDate={currentDate}
       />
+      <View style={styles.weekdaysContainer}>
+        {weekDays.map((day, index) => (
+          <View key={index} style={styles.weekday}>
+            <Text style={styles.weekdayText}>{day}</Text>
+          </View>
+        ))}
+      </View>
+
       <View style={styles.grid}>
         {days.map((day, index) => (
           <Day
@@ -72,6 +83,20 @@ const styles = StyleSheet.create({
     marginTop: 20,
     paddingHorizontal: 10,
     backgroundColor: '#303030',
+  },
+  weekdaysContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 5,
+  },
+  weekday: {
+    width: '13%',
+    alignItems: 'center',
+  },
+  weekdayText: {
+    fontSize: 16,
+    color: '#B3B3B3',
+    fontWeight: 'bold',
   },
   grid: {
     flexDirection: 'row',
