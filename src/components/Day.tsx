@@ -6,15 +6,18 @@ interface DayProps {
   isCurrentMonth: boolean;
   isToday: boolean;
   isNextMonth: boolean;
+  isPreviousMonth: boolean;
 }
 
-const Day: React.FC<DayProps> = ({ day, isCurrentMonth, isToday, isNextMonth }) => {
+const Day: React.FC<DayProps> = ({ day, isCurrentMonth, isToday, isNextMonth, isPreviousMonth }) => {
   const dayStyle = isToday
     ? styles.today
     : isCurrentMonth
     ? styles.currentMonth
     : isNextMonth
     ? styles.nextMonth
+    : isPreviousMonth
+    ? styles.previousMonth
     : styles.otherMonth;
 
   return (
@@ -37,7 +40,7 @@ const styles = StyleSheet.create({
     color: '#B3B3B3',
   },
   today: {
-    backgroundColor: '#FF6347',
+    backgroundColor: '#8C8C8C',
     borderRadius: 25,
     color: '#303030',
     fontWeight: 'bold',
@@ -46,6 +49,9 @@ const styles = StyleSheet.create({
     color: '#B3B3B3',
   },
   nextMonth: {
+    color: '#6B6B6B',
+  },
+  previousMonth: {
     color: '#6B6B6B',
   },
   otherMonth: {
