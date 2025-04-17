@@ -7,11 +7,14 @@ interface HeaderProps {
   onPrevMonth: () => void;
   onNextMonth: () => void;
   onToday: () => void;
+  currentDate: Date;
 }
 
-const Header: React.FC<HeaderProps> = ({ month, year, onPrevMonth, onNextMonth, onToday }) => {
+const Header: React.FC<HeaderProps> = ({ month, year, onPrevMonth, onNextMonth, onToday, currentDate }) => {
   const [currentTime, setCurrentTime] = useState<string>('');
   const [currentDay, setCurrentDay] = useState<string>('');
+  const today = new Date();
+  const isToday = currentDate.getDate() === today.getDate() && currentDate.getMonth() === today.getMonth() && currentDate.getFullYear() === today.getFullYear();
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -37,14 +40,17 @@ const Header: React.FC<HeaderProps> = ({ month, year, onPrevMonth, onNextMonth, 
 
       <View style={styles.mainContent}>
         <TouchableOpacity onPress={onPrevMonth}>
+          <Text style={styles.arrow}>{"△"}</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>
+
+        <Text style={[styles.title, isToday && styles.todayHighlight]}>
           {month} {year}
         </Text>
-          <Text style={styles.arrow}>{"△"}</Text>
+
         <TouchableOpacity onPress={onNextMonth}>
           <Text style={styles.arrow}>{"▽"}</Text>
         </TouchableOpacity>
+
         <TouchableOpacity onPress={onToday} style={styles.todayButton}>
           <Text style={styles.today}>Today</Text>
         </TouchableOpacity>
@@ -81,6 +87,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
+    color: '#B3B3B3',
+  },
+  todayHighlight: {
     color: '#B3B3B3',
   },
   arrow: {
