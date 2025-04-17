@@ -5,24 +5,22 @@ interface DayProps {
   day: number;
   isCurrentMonth: boolean;
   isToday: boolean;
-  isNextMonth: boolean;
-  isPreviousMonth: boolean;
+  isInRange: boolean;  
+  onPress: () => void; 
 }
 
-const Day: React.FC<DayProps> = ({ day, isCurrentMonth, isToday, isNextMonth, isPreviousMonth }) => {
+const Day: React.FC<DayProps> = ({ day, isCurrentMonth, isToday, isInRange, onPress }) => {
   const dayStyle = isToday
     ? styles.today
     : isCurrentMonth
     ? styles.currentMonth
-    : isNextMonth
-    ? styles.nextMonth
-    : isPreviousMonth
-    ? styles.previousMonth
     : styles.otherMonth;
 
+  const rangeStyle = isInRange ? styles.inRange : {}; 
+
   return (
-    <View style={styles.dayContainer}>
-      <Text style={[styles.dayText, dayStyle]}>{day}</Text>
+    <View style={styles.dayContainer} onTouchEnd={onPress}>
+      <Text style={[styles.dayText, dayStyle, rangeStyle]}>{day}</Text>
     </View>
   );
 };
@@ -48,14 +46,13 @@ const styles = StyleSheet.create({
   currentMonth: {
     color: '#B3B3B3',
   },
-  nextMonth: {
-    color: '#6B6B6B',
-  },
-  previousMonth: {
-    color: '#6B6B6B',
-  },
   otherMonth: {
     color: '#6B6B6B',
+  },
+  inRange: {
+    backgroundColor: '#C9C9C9',
+    borderRadius: 25,
+    color: '#303030',
   },
 });
 
