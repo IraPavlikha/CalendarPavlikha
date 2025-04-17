@@ -9,6 +9,10 @@ const Calendar: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(format(currentDate, 'MMMM'));
   const [currentYear, setCurrentYear] = useState(currentDate.getFullYear());
 
+  // Стан для вибору діапазону
+  const [startDate, setStartDate] = useState<number | null>(null);
+  const [endDate, setEndDate] = useState<number | null>(null);
+
   useEffect(() => {
     setCurrentMonth(format(currentDate, 'MMMM'));
     setCurrentYear(currentDate.getFullYear());
@@ -43,7 +47,32 @@ const Calendar: React.FC = () => {
 
   const days = generateCalendarDays(currentDate);
 
+  // Массив днів тижня
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  const handleDayPress = (day: number) => {
+    if (startDate === null) {
+      setStartDate(day);
+      setEndDate(null); // Скидаємо кінцеву дату, якщо обрано нову початкову
+    } else if (endDate === null) {
+      // Якщо кінцева дата ще не вибрана
+      if (day < startDate) {
+        setEndDate(startDate);  // Якщо обраний день менший за початкову дату
+        setStartDate(day);       // Міняємо місцями стартову і кінцеву дату
+      } else {
+        setEndDate(day); // Встановлюємо кінцеву дату
+      }
+    } else {
+      // Якщо діапазон вже вибраний, починаємо новий вибір
+      setStartDate(day);
+      setEndDate(null);
+    }
+  };
+
+  const isDateInRange = (day: number) => {
+    if (startDate === null || endDate === null) return false;
+    return day >= startDate && day <= endDate;
+  };
 
   return (
     <View style={styles.container}>
@@ -55,6 +84,8 @@ const Calendar: React.FC = () => {
         onToday={handleToday}
         currentDate={currentDate}
       />
+
+      {/* Виведення днів тижня */}
       <View style={styles.weekdaysContainer}>
         {weekDays.map((day, index) => (
           <View key={index} style={styles.weekday}>
@@ -70,6 +101,8 @@ const Calendar: React.FC = () => {
             day={day}
             isCurrentMonth={day > 0 && day <= getDaysInMonth(currentDate)}
             isToday={day === new Date().getDate() && currentMonth === format(new Date(), 'MMMM')}
+            isInRange={isDateInRange(day)}  // Перевірка, чи знаходиться день у вибраному діапазоні
+            onPress={() => handleDayPress(day)}  // Обробка натискання на день
           />
         ))}
       </View>
