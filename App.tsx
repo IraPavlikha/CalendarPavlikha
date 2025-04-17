@@ -1,28 +1,21 @@
+// App.tsx
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import DifficultyScreen from './DifficultyScreen';
-import GameScreen from './GameScreen';
+import { SafeAreaView, StyleSheet } from 'react-native';
+import Calendar from './src/components/Calendar';
 
-const Stack = createStackNavigator();
-
-const App = () => {
+const App: React.FC = () => {
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Difficulty">
-        <Stack.Screen
-          name="Difficulty"
-          component={DifficultyScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Game"
-          component={GameScreen}
-          options={{ headerShown: false }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <SafeAreaView style={styles.container}>
+      <Calendar />
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    marginTop: 20,  // Додаємо відступ зверху
+  },
+});
 
 export default App;
